@@ -27,21 +27,16 @@ impl Eq for CampaignState {
 pub struct CampaignInfo {
     /// The user who has created the campaign.
     author: Identity,
-
     /// The user to whom the funds will be sent to upon a successful campaign.
     beneficiary: Identity,
-
     // Whether the campaign is currently: Funding, Claimed, Cancelled.
     state: CampaignState,
-    
     /// The end time for the campaign after which it becomes locked.
-    deadline: u32,
-
+    deadline: u64,
     /// The amount needed to deem the campaign a success.
-    target_amount: u32,
-    
+    target_amount: u64,
     /// The current amount pledged used to measure against the target_amount.
-    total_pledge: u32,
+    total_pledge: u64,
 }
 
 impl CampaignInfo {
@@ -52,8 +47,8 @@ impl CampaignInfo {
     /// * `asset`: [ContractId] - The asset that this campaign accepts as a deposit.
     /// * `author`: [Identity] - The user who has created the campaign.
     /// * `beneficiary`: [Identity] - The user to whom the funds will be sent to upon a successful campaign.
-    /// * `deadline`: [u32] - The end time for the campaign after which it becomes locked.
-    /// * `target_amount`: [u32] - The amount needed to deem the campaign a success.
+    /// * `deadline`: [u64] - The end time for the campaign after which it becomes locked.
+    /// * `target_amount`: [u64] - The amount needed to deem the campaign a success.
     ///
     /// # Returns
     ///
@@ -61,8 +56,8 @@ impl CampaignInfo {
     pub fn new(
         author: Identity,
         beneficiary: Identity,
-        deadline: u32,
-        target_amount: u32,
+        deadline: u64,
+        target_amount: u64,
     ) -> Self {
         Self {
             author,
