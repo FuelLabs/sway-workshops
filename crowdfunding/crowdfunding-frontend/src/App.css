@@ -34,6 +34,7 @@ form {
   margin-left: auto;
   margin-right: auto;
   margin-top: 200px;
+  padding-bottom: 48px;
 }
 
 .form-control {
@@ -46,4 +47,16 @@ form {
   display: flex;
   justify-content: flex-end;
   width: 100%;
+}
+
+.pledged-container{
+
+}
+
+.pledged-amount {
+  font-size: 24px;
+}
+
+.pledged-description {
+
 }
