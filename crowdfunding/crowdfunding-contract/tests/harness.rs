@@ -47,7 +47,7 @@ async fn pledge() {
     let campaign_id = 1;
 
     let base_asset = AssetConfig {
-        id: BASE_ASSET_ID,
+        id: AssetId::new([1; 32]),
         num_coins: number_of_coins,
         coin_amount,
     };
@@ -62,7 +62,7 @@ async fn pledge() {
     let beneficiary = Identity::Address(user_wallet.address().into());
     instance
         .methods()
-        .create_campaign(beneficiary, 100, 512)
+        .create_campaign(base_asset.id, beneficiary, 100, 512)
         .call()
         .await
         .unwrap();
@@ -91,7 +91,6 @@ async fn pledge() {
     let campaign2 = get_campaign(&instance, campaign_id).await;
 
     assert_eq!(campaign2.target_amount, 512);
-    // println!("-------- 👾 total_pledge {}", total_pledge);
 }
 
 async fn get_campaign(instance: &CrowdfundingContract<WalletUnlocked>, id: u64) -> Campaign {

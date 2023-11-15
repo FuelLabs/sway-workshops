@@ -4,7 +4,7 @@ mod data_structures;
 mod interface;
 
 use ::interface::{CrowdfundingABI, Info};
-use ::data_structures::Campaign;
+use ::data_structures::{Campaign, CampaignState};
 
 // import hash to use storage map
 use std::hash::*;
@@ -27,39 +27,29 @@ storage {
 
 impl CrowdfundingABI for Contract {
     #[storage(read, write)]
-    fn create_campaign(beneficiary: Identity, deadline: u64, target_amount: u64) {
+    fn create_campaign(
+        asset: AssetId,
+        beneficiary: Identity,
+        deadline: u64,
+        target_amount: u64,
+    ) {
         require(deadline > height().as_u64(), "DeadlineMustBeInTheFuture");
 
         let author = msg_sender().unwrap();
-
-        let campaign_info = Campaign::new(author, beneficiary, deadline, target_amount);
+        let campaign = Campaign::new(asset, author, beneficiary, deadline, target_amount);
 
         storage.total_campaigns.write(storage.total_campaigns.read() + 1);
-        storage.campaigns.insert(storage.total_campaigns.read(), campaign_info);
+        storage.campaigns.insert(storage.total_campaigns.read(), campaign);
     }
 
     #[storage(read, write), payable]
     fn pledge(campaign_id: u64) {
+        let mut campaign = storage.campaigns.get(campaign_id).try_read().unwrap();
 
+        require(campaign.asset == msg_asset_id(), "IncorrectAssetSent");
+        require(campaign.deadline > height().as_u64(), "CampaignEnded");
+        require(campaign.state != CampaignState::Claimed, "CampaignHasBeenClaimed");
 
-        let result = storage.campaigns.get(campaign_id).try_read();
-
-        match result {
-            Some(_campaign) => {
-                let mut campaign = _campaign;
-                // require(campaign.deadline > height().as_u64(), "CampaignEnded");
-                campaign.total_pledge += msg_amount();
-                // storage.campaigns.insert(campaign_id, campaign);
-            },
-            None => {
-                require(storage.total_campaigns.read() > 0, "CampaignDoesNotExist");
-                require(campaign_id > 0, ":c");
-                storage.campaigns.get(campaign_id).try_read().unwrap();
-            }
-           
-        }
-
-        require(campaign_info.deadline > height().as_u64(), "CampaignEnded");
         campaign.total_pledge += msg_amount();
         storage.campaigns.insert(campaign_id, campaign);
     }
@@ -87,6 +77,10 @@ impl Info for Contract {
     }
 }
 
+const BASE_TOKEN: AssetId = AssetId {
+    value: 0x0000000000000000000000000000000000000000000000000000000000000000,
+};
+
 #[test]
 fn test_total_campaigns() {
     let caller = abi(Info, CONTRACT_ID);
@@ -97,8 +91,9 @@ fn test_total_campaigns() {
 #[test]
 fn test_create_campaign() {
     let user = Identity::Address(Address::from(0x0000000000000000000000000000000000000000000000000000000000000001));
+
     let caller = abi(CrowdfundingABI, CONTRACT_ID);
-    caller.create_campaign {}(user, 100, 200);
+    caller.create_campaign {}(BASE_TOKEN, user, 100, 200);
     let caller_info = abi(Info, CONTRACT_ID);
     let result = caller_info.total_campaigns {}();
     assert(result == 1);
@@ -108,9 +103,9 @@ fn test_create_campaign() {
 fn test_campaign_info() {
     let user = Identity::Address(Address::from(0x0000000000000000000000000000000000000000000000000000000000000001));
     let caller = abi(CrowdfundingABI, CONTRACT_ID);
-    caller.create_campaign {}(user, 100, 200);
+    caller.create_campaign {}(BASE_TOKEN, user, 100, 200);
 
     let caller_info = abi(Info, CONTRACT_ID);
-    let result = caller_info.campaign_info {}(0);
-    assert(result.unwrap().beneficiary == user);
+    let result = caller_info.campaign_info {}(1).unwrap();
+    assert(result.beneficiary == user);
 }

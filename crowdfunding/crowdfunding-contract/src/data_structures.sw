@@ -19,6 +19,7 @@ impl Eq for CampaignState {
 
 /// General data structure containing information about a campaign.
 pub struct Campaign {
+    asset: AssetId,
     author: Identity,
     beneficiary: Identity,
     state: CampaignState,
@@ -32,7 +33,7 @@ impl Campaign {
     ///
     /// # Arguments
     ///
-    /// * `asset`: [ContractId] - The asset that this campaign accepts as a deposit.
+    /// * `asset`: [AssetId] - The asset that this campaign accepts as a deposit.
     /// * `author`: [Identity] - The user who has created the campaign.
     /// * `beneficiary`: [Identity] - The user to whom the funds will be sent to upon a successful campaign.
     /// * `deadline`: [u64] - The end time for the campaign after which it becomes locked.
@@ -42,12 +43,14 @@ impl Campaign {
     ///
     /// * [Campaign] - The newly created campaign.
     pub fn new(
+        asset: AssetId,
         author: Identity,
         beneficiary: Identity,
         deadline: u64,
         target_amount: u64,
     ) -> Self {
         Self {
+            asset,
             author,
             beneficiary,
             state: CampaignState::Funding,
