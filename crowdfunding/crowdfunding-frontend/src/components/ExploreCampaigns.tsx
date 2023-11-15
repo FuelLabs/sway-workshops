@@ -3,9 +3,13 @@ import CampaignCard from "./CampaignCard";
 
 interface ExploreCampaignsProps {
   contract: ContractAbi | null;
+  readOnly: boolean;
 }
 
-export default function ExploreCampaigns({ contract }: ExploreCampaignsProps) {
+export default function ExploreCampaigns({
+  contract,
+  readOnly,
+}: ExploreCampaignsProps) {
   const [status, setStatus] = useState<"loading" | "success" | "error">(
     "loading"
   );
@@ -42,14 +46,22 @@ export default function ExploreCampaigns({ contract }: ExploreCampaignsProps) {
 
       <div>Total Campaigns: {totalCampaigns}</div>
 
-      {campaigns.length > 0 ? (
+      {status === "error" && <div>Oops, something went wrong.</div>}
+
+      {status === "loading" && <div>Loading...</div>}
+
+      {status === "success" && (
         <>
-          {campaigns.map((campaign) => (
-            <CampaignCard campaign={campaign} />
-          ))}
+          {campaigns.length > 0 ? (
+            <>
+              {campaigns.map((campaign) => (
+                <CampaignCard campaign={campaign} readOnly={readOnly} />
+              ))}
+            </>
+          ) : (
+            <>No campaigns posted yet.</>
+          )}
         </>
-      ) : (
-        <>No campaigns posted yet.</>
       )}
     </>
   );

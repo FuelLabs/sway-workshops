@@ -1,17 +1,19 @@
+import { bn } from "fuels";
 import { useState } from "react";
 
 interface CreateCampaignProps {
   contract: ContractAbi | null;
+  wallet: FuelWalletLocked | null;
 }
 
-export default function CreateCampaign({ contract }: CreateCampaignProps) {
+export default function CreateCampaign({ contract, wallet }: CreateCampaignProps) {
   const [status, setStatus] = useState<
     "none" | "loading" | "success" | "error"
   >("none");
   const [showForm, setShowForm] = useState<boolean>(false);
   const [beneficiaryAddress, setBeneficiaryAddress] = useState<string>();
   const [deadline, setDeadline] = useState<string>();
-  const [targetAmount, setTargetAmount] = useState<string>();
+  const [targetAmount, setTargetAmount] = useState<string>("0");
 
   function toggle() {
     setShowForm((s) => !s);
@@ -29,7 +31,9 @@ export default function CreateCampaign({ contract }: CreateCampaignProps) {
         console.log("deadline:", deadline);
         console.log("targetAmount:", targetAmount);
         console.log("SUBMITTED");
-        await contract.functions.create_campaign;
+        const id: IdentityInput = { Address: wallet };
+        const amountInput = bn.parseUnits(targetAmount);
+        await contract.functions.create_campaign(amountInput);
         setStatus("success");
       } catch (error) {
         console.log("ERROR:", error);
@@ -44,6 +48,15 @@ export default function CreateCampaign({ contract }: CreateCampaignProps) {
 
       {showForm && (
         <div className="form-container">
+
+      {status === "success" && (
+        <div>Success! You just created a new campaign.</div>
+      )}
+      {status === "error" && <div>Oops, something went wrong.</div>}
+
+      {status === "loading" && <div>Loading...</div>}
+
+      {status === "none" && (
           <form onSubmit={handleSubmit}>
             <div className="close-button-container">
               <button onClick={toggle}>X</button>
@@ -88,6 +101,7 @@ export default function CreateCampaign({ contract }: CreateCampaignProps) {
 
             <button type="submit">Create</button>
           </form>
+      )}
         </div>
       )}
     </>

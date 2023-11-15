@@ -3,11 +3,13 @@ import { useState } from "react";
 interface CampaignCardProps {
   contract: ContractAbi | null;
   campaign: any | null;
+  readOnly: boolean;
 }
 
 export default function CampaignCard({
   contract,
   campaign,
+  readOnly,
 }: CampaignCardProps) {
   const [pledgeStatus, setPledgeStatus] = useState<
     "none" | "loading" | "success" | "error"
@@ -15,6 +17,8 @@ export default function CampaignCard({
   const [claimStatus, setClaimStatus] = useState<
     "none" | "loading" | "success" | "error"
   >("none");
+
+  console.log("campaign:", campaign);
 
   async function pledgeMoney() {
     if (!contract) {
@@ -55,21 +59,25 @@ export default function CampaignCard({
         <div className="pledged-description">pledged so far</div>
       </div>
 
-      {pledgeStatus === "none" && (
-        <button onClick={pledgeMoney}>Pledge Money</button>
-      )}
-      {pledgeStatus === "success" && (
-        <div>Success! You just pledged funds to this campaign.</div>
-      )}
-      {pledgeStatus === "error" && <div>Oops, something went wrong.</div>}
+      {!readOnly && (
+        <>
+          {pledgeStatus === "none" && (
+            <button onClick={pledgeMoney}>Pledge Money</button>
+          )}
+          {pledgeStatus === "success" && (
+            <div>Success! You just pledged funds to this campaign.</div>
+          )}
+          {pledgeStatus === "error" && <div>Oops, something went wrong.</div>}
 
-      {claimStatus === "none" && (
-        <button onClick={claimPledgedMoney}>Claim Pledged Money</button>
+          {claimStatus === "none" && (
+            <button onClick={claimPledgedMoney}>Claim Pledged Money</button>
+          )}
+          {claimStatus === "success" && (
+            <div>Success! You claimed this campaign's funds.</div>
+          )}
+          {claimStatus === "error" && <div>Oops, something went wrong.</div>}
+        </>
       )}
-      {claimStatus === "success" && (
-        <div>Success! You claimed this campaign's funds.</div>
-      )}
-      {claimStatus === "error" && <div>Oops, something went wrong.</div>}
     </div>
   );
 }
