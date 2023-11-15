@@ -1,0 +1,16 @@
+[package]
+name = "crowdfunding-contract"
+description = "A cargo-generate template for Rust + Sway integration testing."
+version = "0.1.0"
+edition = "2021"
+authors = ["cold-briu <39354014+cold-briu@users.noreply.github.com>"]
+license = "Apache-2.0"
+
+[dev-dependencies]
+fuels = { version = "0.48", features = ["fuel-core-lib"] }
+tokio = { version = "1.12", features = ["rt", "macros"] }
+
+[[test]]
+harness = true
+name = "integration_tests"
+path = "tests/harness.rs"
